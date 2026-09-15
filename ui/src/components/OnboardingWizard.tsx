@@ -106,6 +106,7 @@ import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@paperclipai/a
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 import { DEFAULT_KIMI_LOCAL_MODEL } from "@paperclipai/adapter-kimi-local";
+import { DEFAULT_ANTIGRAVITY_LOCAL_MODEL } from "@paperclipai/adapter-antigravity-local";
 import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@paperclipai/adapter-opencode-local";
 import {
   canGoBackFromOnboardingStep,
@@ -1458,6 +1459,7 @@ function OnboardingWizardInner({
     codex_local: "codex",
     gemini_local: "gemini",
     kimi_local: "kimi",
+    antigravity_local: "agy",
     pi_local: "pi",
     cursor: "agent",
     opencode_local: "opencode",
@@ -2600,6 +2602,54 @@ function OnboardingWizardInner({
                           kind="subscription"
                           disabled={loading || adapterEnvLoading || connectPhase === "connecting"}
                         />
+                      </div>
+                    )}
+                    {showMoreAdapters && (
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {moreAdapters.map((opt) => (
+                           <button
+                             key={opt.type}
+                             disabled={!!opt.comingSoon}
+                             className={cn(
+                               "flex flex-col items-center gap-1.5 rounded-md border p-3 text-xs transition-colors relative",
+                               opt.comingSoon
+                                 ? "border-border opacity-40 cursor-not-allowed"
+                                 : adapterType === opt.type
+                                 ? "border-foreground bg-accent"
+                                 : "border-border hover:bg-accent/50"
+                             )}
+                             onClick={() => {
+                               if (opt.comingSoon) return;
+                               const nextType = opt.type;
+                              setAdapterType(nextType);
+                              if (nextType === "gemini_local" && !model) {
+                                setModel(DEFAULT_GEMINI_LOCAL_MODEL);
+                                return;
+                              }
+                              if (nextType === "antigravity_local" && !model) {
+                                setModel(DEFAULT_ANTIGRAVITY_LOCAL_MODEL);
+                                return;
+                              }
+                              if (nextType === "cursor" && !model) {
+                                setModel(DEFAULT_CURSOR_LOCAL_MODEL);
+                                return;
+                              }
+                              if (nextType === "opencode_local") {
+                                setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
+                                return;
+                              }
+                              setModel("");
+                            }}
+                          >
+                            <opt.icon className="h-4 w-4" />
+                            <span className="font-medium">{opt.label}</span>
+                            <span className="text-muted-foreground text-[10px]">
+                              {opt.comingSoon
+                                ? opt.disabledLabel ?? "Coming soon"
+                                : opt.description}
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     )}
 
