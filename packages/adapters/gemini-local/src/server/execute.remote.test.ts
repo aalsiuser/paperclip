@@ -246,15 +246,29 @@ describe("gemini remote execution", () => {
         stats: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
       }),
     ].join("\n");
-    const runnerExecute = vi.fn(async (input: { command: string; args?: string[] }) => ({
-      exitCode: 0,
-      signal: null,
-      timedOut: false,
-      stdout: input.command === "gemini" ? geminiOutput : "",
-      stderr: "",
-      pid: 321,
-      startedAt: new Date().toISOString(),
-    }));
+    const runnerExecute = vi.fn(async (input: { command: string; args?: string[] }) => {
+      const script = input.args?.[1] ?? "";
+      if (script.includes("wc -c <")) {
+        return {
+          exitCode: 0,
+          signal: null,
+          timedOut: false,
+          stdout: "0",
+          stderr: "",
+          pid: 321,
+          startedAt: new Date().toISOString(),
+        };
+      }
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: input.command === "gemini" || script.includes("gemini ") ? geminiOutput : "",
+        stderr: "",
+        pid: 321,
+        startedAt: new Date().toISOString(),
+      };
+    });
 
     await execute({
       runId: "run-sandbox-1",

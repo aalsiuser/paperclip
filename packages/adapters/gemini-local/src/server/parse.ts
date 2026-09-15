@@ -88,12 +88,15 @@ export function parseGeminiJsonl(stdout: string) {
     outputTokens: 0,
   };
 
+  let jsonEventCount = 0;
   for (const rawLine of stdout.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line) continue;
 
     const event = parseJson(line);
     if (!event) continue;
+
+    jsonEventCount++;
 
     const foundSessionId = readSessionId(event);
     if (foundSessionId) sessionId = foundSessionId;
@@ -188,9 +191,16 @@ export function parseGeminiJsonl(stdout: string) {
     }
   }
 
+  let summary = messages.join("\n\n").trim();
+  if (jsonEventCount === 0 && stdout.trim().length > 0) {
+    const trimmed = stdout.trim();
+    const limit = 4000;
+    summary = trimmed.length > limit ? trimmed.slice(0, limit) + "..." : trimmed;
+  }
+
   return {
     sessionId,
-    summary: messages.join("\n\n").trim(),
+    summary,
     usage,
     costUsd,
     errorMessage,

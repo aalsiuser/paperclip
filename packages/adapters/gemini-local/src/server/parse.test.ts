@@ -136,6 +136,20 @@ describe("parseGeminiJsonl", () => {
     expect(result.errorMessage).toBe("boom");
   });
 
+  it("falls back to raw stdout text if no valid JSON events are parsed", () => {
+    const stdout = "hello\n";
+    const result = parseGeminiJsonl(stdout);
+    expect(result.summary).toBe("hello");
+    expect(result.sessionId).toBeNull();
+  });
+
+  it("truncates raw stdout text if it exceeds the length limit", () => {
+    const stdout = "a".repeat(5000);
+    const result = parseGeminiJsonl(stdout);
+    expect(result.summary.length).toBe(4003); // 4000 + "..."
+    expect(result.summary.endsWith("...")).toBe(true);
+  });
+
   it("classifies non-interactive manual authorization failures as auth required", () => {
     const result = detectGeminiAuthRequired({
       parsed: null,
